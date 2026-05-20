@@ -13,6 +13,8 @@
 
 ![Scan Results](docs/screenshots/results.png)
 
+![Scans](docs/screenshots/scans.png)
+
 ---
 
 ## What is SmartFuzz
@@ -181,7 +183,3 @@ PRs welcome. Please open an issue first for non-trivial changes so we can align 
 in `frontend/` and a syntax check on the backend before submitting.
 
 ---
-
-## License
-
-MIT — see [LICENSE](LICENSE).
