@@ -21,13 +21,7 @@ services:
         value: "0"
       - key: SMARTFUZZ_ALLOW_LOCAL
         value: "0"
-      - key: DATA_DIR
-        value: /app/data
     healthCheckPath: /api/health
-    disk:
-      name: smartfuzz-data
-      mountPath: /app/data
-      sizeGB: 1
 
   - type: web
     name: smartfuzz-frontend
