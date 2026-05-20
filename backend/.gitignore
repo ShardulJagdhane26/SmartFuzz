@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+venv/
+# reports/ and *.pdf intentionally NOT ignored — demo PDFs are committed
+# alongside smartfuzz.db so the deployed app has scan history on first boot.

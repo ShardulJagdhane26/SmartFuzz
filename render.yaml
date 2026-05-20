@@ -1,0 +1,47 @@
+# SmartFuzz — Render.com deployment blueprint.
+#
+# The backend ships as a Docker service so Playwright/Chromium installs
+# cleanly. The frontend service is included for completeness but is intended
+# for users hosting the React app on Render. If you're hosting the frontend
+# on Vercel (recommended), skip enabling the frontend service in Render and
+# set VITE_API_BASE_URL in your Vercel project settings instead.
+
+services:
+  - type: web
+    name: smartfuzz-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false              # supply via Render dashboard
+      - key: PORT
+        value: 5000
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: SMARTFUZZ_ALLOW_LOCAL
+        value: "0"
+      - key: DATA_DIR
+        value: /app/data
+    healthCheckPath: /api/health
+    disk:
+      name: smartfuzz-data
+      mountPath: /app/data
+      sizeGB: 1
+
+  - type: web
+    name: smartfuzz-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false              # supply via Render dashboard
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://smartfuzz-backend.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

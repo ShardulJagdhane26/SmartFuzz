@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SMARTFUZZ_ALLOW_LOCAL=${SMARTFUZZ_ALLOW_LOCAL:-0}
+    volumes:
+      # Persist the SQLite database and the generated PDF reports across
+      # `docker compose down && docker compose up` cycles.
+      - ./backend/smartfuzz.db:/app/smartfuzz.db
+      - ./backend/reports:/app/reports
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build: ./frontend
+    depends_on: [backend]
+    ports:
+      - "3000:80"

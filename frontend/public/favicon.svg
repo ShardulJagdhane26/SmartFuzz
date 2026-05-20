@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square frame, gradient fill (matches Navbar logo tile) -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#g)"/>
+  <!-- Shield icon (lucide Shield path, centred + scaled into the frame) -->
+  <path d="M16 24.5s7-3.5 7-8.75V8.5l-7-2.625L9 8.5v7.25c0 5.25 7 8.75 7 8.75z"
+        fill="#ffffff"/>
+  <!-- Small cyan accent dot — same idiom as the Navbar logo -->
+  <circle cx="22" cy="22" r="1.8" fill="#22d3ee"/>
+</svg>

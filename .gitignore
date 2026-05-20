@@ -1,0 +1,59 @@
+# ── Secrets — NEVER commit ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# ── Node / Vite ───────────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.vite/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+# ── Editors / OS ──────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Claude Code state ─────────────────────────────────────────────────────────
+.claude/
+
+# ── Misc logs / temp ──────────────────────────────────────────────────────────
+*.log
+*.tmp
+project_dump.txt
+WebFuzzer
+
+# ── INTENTIONALLY TRACKED ─────────────────────────────────────────────────────
+# backend/smartfuzz.db — seed DB with demo scan history (no PII)
+# backend/reports/      — pre-generated demo PDFs
+# Both are committed on purpose so the deployed app has demo data on first
+# boot. Don't add them to this file.
