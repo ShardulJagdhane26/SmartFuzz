@@ -5,9 +5,8 @@ __pycache__/
 venv/
 .env
 .env.*
-smartfuzz.db
-smartfuzz.db-*
-reports/
+# smartfuzz.db and reports/ are intentionally included in the image
+# so the deployed app starts with seed data (historical scans).
 .pytest_cache/
 .mypy_cache/
 *.log
