@@ -161,12 +161,6 @@ graph LR
 
 ---
 
-## Contributing
-
-<p align="justify">PRs welcome. Please open an issue first for non-trivial changes so we can align on scope. Run <code>npx tsc --noEmit</code> in <code>frontend/</code> and a syntax check on the backend before submitting.</p>
-
----
-
 ## Team
 
 SmartFuzz was built by:
