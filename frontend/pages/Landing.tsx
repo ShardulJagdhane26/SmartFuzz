@@ -190,8 +190,59 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
         </div>
       </section>
 
+      {/* ── Team ── */}
+      <section className="border-t border-white/[0.06] py-16">
+        <div className="max-w-screen-2xl mx-auto px-10 lg:px-16">
+          <div className="flex flex-col items-center gap-10">
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-widest text-emerald-500 font-bold mb-2">Built by</p>
+              <h3 className="text-2xl font-black text-white tracking-tight">The Team</h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-3xl">
+              {[
+                { name: 'Nazish Ansari',   github: 'Nazish0508'      },
+                { name: 'Suhani Parkhi',   github: 'suhani-90'       },
+                { name: 'Sejal Bhole',     github: 'SejalBhole'      },
+                { name: 'Shardul Jagdhane',github: 'ShardulJagdhane26'},
+              ].map(({ name, github }) => (
+                <a
+                  key={github}
+                  href={`https://github.com/${github}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-3 p-5 rounded-2xl border border-white/[0.07] hover:border-emerald-500/40 hover:bg-emerald-500/[0.04] transition-all group"
+                >
+                  <img
+                    src={`https://github.com/${github}.png?size=80`}
+                    alt={name}
+                    width={64}
+                    height={64}
+                    className="rounded-full ring-2 ring-white/10 group-hover:ring-emerald-500/50 transition-all"
+                  />
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors leading-tight">{name}</p>
+                    <p className="text-xs text-slate-500 group-hover:text-emerald-400 transition-colors mt-0.5">@{github}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <a
+              href="https://github.com/ShardulJagdhane26/SmartFuzz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/[0.1] hover:border-emerald-500/40 hover:bg-emerald-500/[0.05] text-slate-400 hover:text-white text-sm font-medium transition-all"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+              ShardulJagdhane26 / SmartFuzz
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
-      <footer className="border-t border-white/[0.05] py-7">
+      <footer className="border-t border-white/[0.05] py-6">
         <div className="max-w-screen-2xl mx-auto px-10 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-2">
           <span className="text-slate-600 text-sm">© 2026 SmartFuzz. All rights reserved.</span>
           <span className="text-slate-700 text-xs uppercase tracking-widest font-bold">SmartFuzz by 4 bits</span>
