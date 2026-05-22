@@ -1,22 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
 import Terminal from "../components/Terminal";
 import { ScanLog } from "../types";
 import {
   Activity, Search, Sparkles, Loader2,
-  AlertCircle, ShieldAlert, XCircle, CheckCircle2, Ban, WifiOff,
+  AlertCircle, ShieldAlert, XCircle, CheckCircle2, Ban,
 } from "lucide-react";
 import { getScanStatus, cancelScan, ScanStatusResponse } from "../api";
-
-const SOCKET_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
-interface ProgressEvent {
-  scan_id:          string;
-  progress:         number;
-  current_step:     string;
-  status:           ScanStatusResponse["status"];
-  findings_so_far:  number;
-}
 
 interface LiveScanProps {
   scanId: string;
@@ -58,10 +47,8 @@ const LiveScan: React.FC<LiveScanProps> = ({ scanId, onScanComplete, onScanEnded
   const [error, setError]                 = useState<string | null>(null);
   const [cancelling, setCancelling]       = useState(false);
   const [elapsedSecs, setElapsedSecs]     = useState(0);
-  const [realtimeDown, setRealtimeDown]   = useState(false);
 
   const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null);
-  const socketRef      = useRef<Socket | null>(null);
   const lastStepRef    = useRef("");
   // Anchor the elapsed timer to the scan's actual created_at (loaded from the
   // backend on mount) so navigating away and back doesn't reset the count.
@@ -130,55 +117,35 @@ const LiveScan: React.FC<LiveScanProps> = ({ scanId, onScanComplete, onScanEnded
     }
   };
 
-  // ── One-time initial HTTP fetch + WebSocket subscription ─────────────────
+  // ── Continuous HTTP polling ──────────────────────────────────────────────
+  // The backend runs SocketIO in threading mode, which can't serve WebSocket
+  // transport on its server — so we poll the status endpoint as the single,
+  // reliable source of truth. applySnapshot() handles the terminal-state
+  // transition (navigates to results / stops the timer) exactly once.
   useEffect(() => {
     let cancelled = false;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
 
-    // 1. Initial fetch so a page refresh mid-scan immediately shows real state,
-    //    even if WS arrives slightly later (or never).
-    getScanStatus(scanId)
-      .then(data => { if (!cancelled) applySnapshot(data); })
-      .catch(err => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Lost connection to backend.");
-      });
-
-    // 2. Open the WebSocket. Backend joins us to a room keyed by scan_id
-    //    and pushes updates as the scan progresses.
-    const socket = io(SOCKET_URL, {
-      query: { scan_id: scanId },
-      transports: ["websocket", "polling"],
-      reconnectionAttempts: 3,
-    });
-    socketRef.current = socket;
-
-    socket.on("scan_progress", (data: ProgressEvent) => {
-      if (cancelled) return;
-      setRealtimeDown(false);
-      applySnapshot(data);
-    });
-
-    const fallbackToHttp = async () => {
-      setRealtimeDown(true);
+    const poll = async () => {
       try {
         const data = await getScanStatus(scanId);
-        if (!cancelled) applySnapshot(data);
+        if (cancelled) return;
+        applySnapshot(data);
+        if (["completed", "failed", "cancelled"].includes(data.status) && pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Lost connection to backend.");
       }
     };
 
-    socket.on("connect_error", fallbackToHttp);
-    socket.on("disconnect", (reason) => {
-      // Benign disconnects (page navigation) don't need a fallback fetch —
-      // only react to unexpected ones while the scan is still active.
-      if (completedRef.current) return;
-      if (reason !== "io client disconnect") fallbackToHttp();
-    });
+    poll();                            // immediate first fetch
+    pollTimer = setInterval(poll, 2000); // then every 2s until terminal
 
     return () => {
       cancelled = true;
-      socket.disconnect();
-      socketRef.current = null;
+      if (pollTimer) clearInterval(pollTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanId]);
@@ -254,15 +221,6 @@ const LiveScan: React.FC<LiveScanProps> = ({ scanId, onScanComplete, onScanEnded
         <div className="flex items-start gap-3 bg-rose-500/[0.08] border border-rose-500/20 text-rose-400 rounded-xl px-5 py-4">
           <AlertCircle size={17} className="shrink-0 mt-0.5" strokeWidth={2} />
           <p className="text-sm">{error}</p>
-        </div>
-      )}
-      {realtimeDown && isActive && !error && (
-        <div className="flex items-start gap-3 bg-amber-500/[0.08] border border-amber-500/20 text-amber-400 rounded-xl px-5 py-4">
-          <WifiOff size={17} className="shrink-0 mt-0.5" strokeWidth={2} />
-          <div>
-            <p className="text-sm font-bold">Real-time updates unavailable</p>
-            <p className="text-xs text-amber-300/80 mt-0.5">WebSocket failed to connect. Showing the last known scan state — refresh the page for an update.</p>
-          </div>
         </div>
       )}
       {status === "cancelled" && (

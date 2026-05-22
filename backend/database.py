@@ -583,6 +583,51 @@ def get_dashboard_stats() -> dict:
     }
 
 
+# ── Benchmark stats ───────────────────────────────────────────────────────────
+
+def get_benchmark_stats() -> dict:
+    """Top-level metrics for the Benchmark page. Routed through _get_conn() so it
+    works in both local-SQLite and Turso modes (the old raw sqlite3.connect on
+    DB_PATH broke under Turso, where DB_PATH is None)."""
+    conn = _get_conn()
+
+    total_scans = conn.execute("SELECT COUNT(*) AS cnt FROM SCAN").fetchone()["cnt"]
+    total_findings = conn.execute("SELECT COUNT(*) AS cnt FROM VULNERABILITY").fetchone()["cnt"]
+
+    top_row = conn.execute("""
+        SELECT vuln_type, COUNT(*) AS cnt
+        FROM VULNERABILITY
+        GROUP BY vuln_type
+        ORDER BY cnt DESC
+        LIMIT 1
+    """).fetchone()
+    top_vuln_type = top_row["vuln_type"] if top_row else "—"
+
+    completed = conn.execute("""
+        SELECT created_at, completed_at FROM SCAN
+        WHERE status='completed' AND completed_at IS NOT NULL
+    """).fetchall()
+    conn.close()
+
+    durations = []
+    for row in completed:
+        try:
+            start = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
+            end   = datetime.fromisoformat(row["completed_at"].replace("Z", "+00:00"))
+            durations.append((end - start).total_seconds())
+        except Exception:
+            pass
+
+    avg_duration = round(sum(durations) / len(durations), 1) if durations else 0
+
+    return {
+        "total_scans":          total_scans,
+        "total_findings":       total_findings,
+        "top_vuln_type":        top_vuln_type,
+        "avg_duration_seconds": avg_duration,
+    }
+
+
 # ── get_all_scans ─────────────────────────────────────────────────────────────
 
 def get_all_scans() -> list[dict]:

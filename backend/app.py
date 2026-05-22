@@ -514,46 +514,7 @@ def download_report(scan_id):
 
 @app.route("/api/benchmark", methods=["GET"])
 def benchmark_stats():
-    import sqlite3
-    conn = sqlite3.connect(db.DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-
-    total_scans = conn.execute("SELECT COUNT(*) FROM SCAN").fetchone()[0]
-    total_findings = conn.execute("SELECT COUNT(*) FROM VULNERABILITY").fetchone()[0]
-
-    top_row = conn.execute("""
-        SELECT vuln_type, COUNT(*) AS cnt
-        FROM VULNERABILITY
-        GROUP BY vuln_type
-        ORDER BY cnt DESC
-        LIMIT 1
-    """).fetchone()
-    top_vuln_type = top_row["vuln_type"] if top_row else "—"
-
-    completed = conn.execute("""
-        SELECT created_at, completed_at FROM SCAN
-        WHERE status='completed' AND completed_at IS NOT NULL
-    """).fetchall()
-    conn.close()
-
-    durations = []
-    for row in completed:
-        try:
-            from datetime import datetime
-            start = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
-            end   = datetime.fromisoformat(row["completed_at"].replace("Z", "+00:00"))
-            durations.append((end - start).total_seconds())
-        except Exception:
-            pass
-
-    avg_duration = round(sum(durations) / len(durations), 1) if durations else 0
-
-    return jsonify({
-        "total_scans":           total_scans,
-        "total_findings":        total_findings,
-        "top_vuln_type":         top_vuln_type,
-        "avg_duration_seconds":  avg_duration,
-    }), 200
+    return jsonify(db.get_benchmark_stats()), 200
 
 
 if __name__ == "__main__":
