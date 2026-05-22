@@ -66,8 +66,12 @@ DEFAULT_HEADERS = {
 }
 TIMEOUT = 10                  # seconds per requests-fallback request
 PAGE_TIMEOUT_MS = 15_000      # Playwright per-page nav timeout
-NETWORKIDLE_MS = 10_000       # cap waiting for networkidle
-TOTAL_BUDGET_S = 300          # 5-minute total scan budget
+NETWORKIDLE_MS = 2_500        # cap waiting for networkidle. Kept short on purpose:
+                              # the DOM (forms + links) is already present after
+                              # domcontentloaded, so this is just a brief window to
+                              # catch late XHR param sets. Heavy sites never reach
+                              # true idle, so a long cap only wasted time.
+TOTAL_BUDGET_S = 180          # 3-minute hard cap on the whole crawl
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -76,7 +80,7 @@ TOTAL_BUDGET_S = 300          # 5-minute total scan budget
 
 def crawl(
     target_url: str,
-    max_pages: int = 10,
+    max_pages: int = 6,
     *,
     auth_cookies: list[dict] | None = None,
     auth_headers: dict[str, str] | None = None,
@@ -163,7 +167,7 @@ def _crawl_with_playwright(
 
     def _block_static_resources(route):
         try:
-            if route.request.resource_type in ("image", "font", "media"):
+            if route.request.resource_type in ("image", "font", "media", "stylesheet"):
                 route.abort()
             else:
                 route.continue_()
