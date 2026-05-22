@@ -31,9 +31,31 @@ GEMINI_URL = (
 )
 
 # HTTP statuses worth a single retry — almost always transient under free tier.
-_RETRY_STATUSES = {429, 500, 502, 503, 504}
+_RETRY_STATUSES = {500, 502, 503, 504}
 _RETRY_BACKOFF_S = 3.0  # short enough not to stall the scan, long enough to
                         # clear a transient per-minute quota blip
+
+# ── Circuit breaker ────────────────────────────────────────────────────────────
+# Under the free tier a single scan fires 100+ per-field Gemini calls. Once the
+# quota is hit, EVERY subsequent call also returns 429 — and naively retrying
+# each one with a backoff sleep turned scans into 10+ minutes of pure waiting.
+# So the first 429 "trips" the breaker: all further calls short-circuit straight
+# to the static fallback for a cooldown window, then one probe is allowed again.
+_GEMINI_COOLDOWN_S = 120.0
+_gemini_cooldown_until = 0.0
+
+
+def _gemini_tripped() -> bool:
+    return time.time() < _gemini_cooldown_until
+
+
+def _trip_gemini(status: int) -> None:
+    global _gemini_cooldown_until
+    _gemini_cooldown_until = time.time() + _GEMINI_COOLDOWN_S
+    logger.warning(
+        f"[PayloadGen] Gemini {status} (rate-limited/quota) — pausing AI synthesis "
+        f"for {_GEMINI_COOLDOWN_S:.0f}s, using static payloads meanwhile"
+    )
 
 # ── Static Fallback Payloads ──────────────────────────────────────────────────
 
@@ -390,8 +412,14 @@ def generate_all_payloads(vuln_classes: list, crawl_data: dict) -> dict:
 # ── Gemini API Call ───────────────────────────────────────────────────────────
 
 def _gemini_post(body: dict, timeout: int = 20) -> requests.Response | None:
-    """POST to Gemini with one automatic retry on transient failures (429/5xx).
-    Returns the Response on the final attempt, or None on connection error."""
+    """POST to Gemini with one automatic retry on transient 5xx failures.
+    Returns the Response on the final attempt, or None on connection error.
+
+    If the rate-limit circuit breaker is open (a recent 429), returns None
+    immediately — no HTTP call, no sleep — so the caller uses static payloads."""
+    if _gemini_tripped():
+        return None
+
     url = f"{GEMINI_URL}?key={GEMINI_API_KEY}"
     last_resp: requests.Response | None = None
     for attempt in (1, 2):
@@ -407,6 +435,11 @@ def _gemini_post(body: dict, timeout: int = 20) -> requests.Response | None:
             logger.error(f"[PayloadGen] Network error on retry: {e}")
             return None
         last_resp = resp
+        # 429 = rate-limited / quota exhausted. Trip the breaker and bail out
+        # immediately — retrying would just burn another quota slot and stall.
+        if resp.status_code == 429:
+            _trip_gemini(resp.status_code)
+            return resp
         if resp.status_code in _RETRY_STATUSES and attempt == 1:
             logger.warning(
                 f"[PayloadGen] Gemini {resp.status_code} (transient) — "
