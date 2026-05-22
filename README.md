@@ -1,6 +1,6 @@
 # SmartFuzz
 
-> AI-powered web vulnerability fuzzer with differential analysis, Gemini-synthesised payloads, and CVSS-scored findings.
+> AI powered web vulnerability fuzzer with differential analysis, Gemini synthesised payloads, and CVSS scored findings.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -19,20 +19,9 @@
 
 ## What is SmartFuzz
 
-SmartFuzz is an AI-augmented web application security scanner that combines a Playwright-driven crawler, an async
-differential fuzzer, and Google Gemini for context-aware payload synthesis. Where traditional fuzzers blast fixed
-payload lists at every endpoint, SmartFuzz crawls the target first to understand its forms, fields, and parameter
-names, then asks Gemini to generate attack vectors tailored to that specific surface. Each request is compared
-against a method-correct baseline so false positives from reflected query strings and stock 404 pages are filtered
-out before they ever reach the report.
+<p align="justify">SmartFuzz is an AI-augmented web application security scanner that combines a Playwright driven crawler, an async differential fuzzer, and Google Gemini for context aware payload synthesis. Where traditional fuzzers blast fixed payload lists at every endpoint, SmartFuzz crawls the target first to understand its forms, fields, and parameter names, then asks Gemini to generate attack vectors tailored to that specific surface. Each request is compared against a method correct baseline so false positives from reflected query strings and stock 404 pages are filtered out before they ever reach the report.</p>
 
-After the first pass, SmartFuzz feeds the confirmed findings back into Gemini for a second-pass refinement — the
-adaptive feedback loop generates more sophisticated variants, WAF-bypass encodings, and deeper exploitation
-attempts targeted at the parameters that already cracked. When Gemini is rate-limited, the loop falls back to
-deterministic payload mutations so the second pass always runs. Every finding gets a CVSS v3.1 base score and
-vector, an OWASP Top 10 (2021) category, and a tailored remediation snippet. The current release supports
-eleven vulnerability classes: SQLi, XSS, RCE, SSRF, Command Injection, Auth Bypass, IDOR, NoSQL injection, XXE,
-SSTI, and Open Redirect.
+<p align="justify">After the first pass, SmartFuzz feeds the confirmed findings back into Gemini for a second-pass refinement, the adaptive feedback loop generates more sophisticated variants, WAF-bypass encodings, and deeper exploitation attempts targeted at the parameters that already cracked. When Gemini is rate-limited, the loop falls back to deterministic payload mutations so the second pass always runs. Every finding gets a CVSS v3.1 base score and vector, an OWASP Top 10 (2021) category, and a tailored remediation snippet. The current release supports eleven vulnerability classes: SQLi, XSS, RCE, SSRF, Command Injection, Auth Bypass, IDOR, NoSQL injection, XXE, SSTI, and Open Redirect.</p>
 
 ---
 
@@ -72,7 +61,7 @@ copy backend\.env.example backend\.env   # then edit and set GEMINI_API_KEY
 docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — the backend is proxied at `/api/*`.
+<p align="justify">Open <a href="http://localhost:3000">http://localhost:3000</a> — the backend is proxied at <code>/api/*</code>.</p>
 
 ---
 
@@ -90,7 +79,7 @@ $env:GEMINI_API_KEY = "your-key-here"
 python app.py
 ```
 
-The backend serves on `http://localhost:5000`. Set `FLASK_DEBUG=1` for hot-reload during development.
+<p align="justify">The backend serves on <code>http://localhost:5000</code>. Set <code>FLASK_DEBUG=1</code> for hot-reload during development.</p>
 
 ### Frontend
 
@@ -100,7 +89,7 @@ npm install
 npm run dev
 ```
 
-The frontend serves on `http://localhost:5173` by default and talks to the backend on `5000`.
+<p align="justify">The frontend serves on <code>http://localhost:5173</code> by default and talks to the backend on <code>5000</code>.</p>
 
 ---
 
@@ -144,7 +133,7 @@ graph LR
 | GET    | `/api/report/<scan_id>/pdf`       | Download / regenerate the PDF report for a scan                        |
 | GET    | `/api/benchmark`                  | Top-level metrics for the Benchmark page                               |
 
-A WebSocket channel at the same origin emits `scan_progress` events; clients join the room named after `scan_id`.
+<p align="justify">A WebSocket channel at the same origin emits <code>scan_progress</code> events; clients join the room named after <code>scan_id</code>.</p>
 
 ---
 
@@ -158,28 +147,22 @@ A WebSocket channel at the same origin emits `scan_progress` events; clients joi
 | `PORT`                   | no       | `5000`                   | Backend listen port                                                                    |
 | `FLASK_DEBUG`            | no       | `0`                      | Set to `1` for the dev server with auto-reload                                         |
 
-The frontend reads `VITE_API_BASE_URL` at build time; leave it unset for local development.
+<p align="justify">The frontend reads <code>VITE_API_BASE_URL</code> at build time; leave it unset for local development.</p>
 
 ---
 
 ## Legal & disclaimer
 
-**Do not run SmartFuzz against systems you do not own or have explicit written authorisation to test.**
+<p align="justify"><strong>Do not run SmartFuzz against systems you do not own or have explicit written authorisation to test.</strong></p>
 
-Active vulnerability scanning of third-party systems is a criminal offence under the Information Technology Act,
-2000 (India), §43 (penalty for damage to computer, computer system, etc.) and §66 (computer-related offences),
-and under comparable laws in most jurisdictions — including the Computer Fraud and Abuse Act (United States),
-the Computer Misuse Act 1990 (United Kingdom), and the Council of Europe Convention on Cybercrime.
+<p align="justify">Active vulnerability scanning of third-party systems is a criminal offence under the Information Technology Act, 2000 (India), §43 (penalty for damage to computer, computer system, etc.) and §66 (computer-related offences), and under comparable laws in most jurisdictions — including the Computer Fraud and Abuse Act (United States), the Computer Misuse Act 1990 (United Kingdom), and the Council of Europe Convention on Cybercrime.</p>
 
-SmartFuzz includes a pre-scan consent modal that documents operator authorisation; the SSRF guard further blocks
-scans targeting private and cloud-metadata IPs by default. These mechanisms do not absolve the operator of legal
-responsibility. The authors accept no liability for misuse of this software.
+<p align="justify">SmartFuzz includes a pre-scan consent modal that documents operator authorisation; the SSRF guard further blocks scans targeting private and cloud-metadata IPs by default. These mechanisms do not absolve the operator of legal responsibility. The authors accept no liability for misuse of this software.</p>
 
 ---
 
 ## Contributing
 
-PRs welcome. Please open an issue first for non-trivial changes so we can align on scope. Run `npx tsc --noEmit`
-in `frontend/` and a syntax check on the backend before submitting.
+<p align="justify">PRs welcome. Please open an issue first for non-trivial changes so we can align on scope. Run <code>npx tsc --noEmit</code> in <code>frontend/</code> and a syntax check on the backend before submitting.</p>
 
 ---
