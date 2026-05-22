@@ -474,19 +474,31 @@ def insert_findings_bulk(scan_id: str, findings: list[dict]):
         return
     rows = [_finding_row(scan_id, f) for f in findings]
 
-    if _USE_TURSO:
-        if _turso_conn is None:
-            _init_turso_conn()
-        # Hold the write lock once for the whole batch; commit syncs it all at once.
-        with _turso_lock:
-            for r in rows:
-                _turso_conn.execute(_INSERT_FINDING_SQL, list(r))
-            _turso_conn.commit()
-    else:
-        conn = _get_conn()
-        conn.executemany(_INSERT_FINDING_SQL, rows)
-        conn.commit()
-        conn.close()
+    try:
+        if _USE_TURSO:
+            if _turso_conn is None:
+                _init_turso_conn()
+            # Hold the write lock once for the whole batch; commit syncs it all at
+            # once. libsql's execute() needs a tuple (a list raises TypeError) —
+            # _finding_row already returns a tuple, so pass r straight through.
+            with _turso_lock:
+                for r in rows:
+                    _turso_conn.execute(_INSERT_FINDING_SQL, r)
+                _turso_conn.commit()
+        else:
+            conn = _get_conn()
+            conn.executemany(_INSERT_FINDING_SQL, rows)
+            conn.commit()
+            conn.close()
+    except Exception as e:
+        # Safety net: a bug in the batch path must never fail a whole scan.
+        # Fall back to the proven per-finding insert so findings still persist.
+        print(f"[db] bulk insert failed ({e}); falling back to individual inserts")
+        for f in findings:
+            try:
+                insert_finding(scan_id, f)
+            except Exception:
+                pass
 
 
 def get_findings(scan_id: str) -> list[dict]:

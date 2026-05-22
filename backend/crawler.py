@@ -66,7 +66,7 @@ DEFAULT_HEADERS = {
 }
 TIMEOUT = 10                  # seconds per requests-fallback request
 PAGE_TIMEOUT_MS = 15_000      # Playwright per-page nav timeout
-NETWORKIDLE_MS = 2_500        # cap waiting for networkidle. Kept short on purpose:
+NETWORKIDLE_MS = 1_500        # cap waiting for networkidle. Kept short on purpose:
                               # the DOM (forms + links) is already present after
                               # domcontentloaded, so this is just a brief window to
                               # catch late XHR param sets. Heavy sites never reach
@@ -80,7 +80,7 @@ TOTAL_BUDGET_S = 180          # 3-minute hard cap on the whole crawl
 
 def crawl(
     target_url: str,
-    max_pages: int = 6,
+    max_pages: int = 4,
     *,
     auth_cookies: list[dict] | None = None,
     auth_headers: dict[str, str] | None = None,
