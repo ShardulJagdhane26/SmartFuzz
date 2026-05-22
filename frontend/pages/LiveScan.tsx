@@ -216,9 +216,9 @@ const LiveScan: React.FC<LiveScanProps> = ({ scanId, onScanComplete, onScanEnded
     <div className="space-y-7 animate-in fade-in duration-700 pb-12">
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] pb-7">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/[0.06] pb-7">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Runtime{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Stream

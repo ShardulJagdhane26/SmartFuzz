@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Sparkles, Menu, X } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
 import { NavItem } from '../types';
 
@@ -10,6 +10,13 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isScanning }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const go = (id: string) => {
+    setActiveTab(id);
+    setMenuOpen(false);
+  };
+
   return (
     <header
       className="sticky top-0 z-50 w-full"
@@ -25,12 +32,12 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isScanning }) 
         style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(16,185,129,0.6) 35%, rgba(34,211,238,0.5) 65%, transparent 100%)' }}
       />
 
-      <div className="px-10 lg:px-16 h-24 flex items-center gap-6">
+      <div className="px-4 md:px-10 lg:px-16 h-20 md:h-24 flex items-center gap-6">
 
         {/* Logo */}
         <div
           className="flex items-center gap-3.5 cursor-pointer shrink-0 group"
-          onClick={() => setActiveTab('landing')}
+          onClick={() => go('landing')}
         >
           <div className="relative">
             {/* Gradient border ring */}
@@ -64,9 +71,9 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isScanning }) 
           </span>
         </div>
 
-        {/* Nav pill container */}
+        {/* Desktop nav pill — unchanged on md+, hidden on mobile */}
         <nav
-          className="ml-auto flex items-center p-1.5 rounded-2xl gap-0.5"
+          className="ml-auto hidden md:flex items-center p-1.5 rounded-2xl gap-0.5"
           style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.07)',
@@ -78,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isScanning }) 
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => go(item.id)}
                 className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-[15px] transition-all duration-200 whitespace-nowrap"
                 style={
                   isActive
@@ -117,7 +124,58 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, isScanning }) 
           })}
         </nav>
 
+        {/* Mobile hamburger — only on small screens */}
+        <button
+          onClick={() => setMenuOpen(v => !v)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          className="md:hidden ml-auto shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-slate-300 transition-all active:scale-95"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          {menuOpen ? <X size={22} strokeWidth={2} /> : <Menu size={22} strokeWidth={2} />}
+        </button>
       </div>
+
+      {/* Mobile dropdown menu */}
+      {menuOpen && (
+        <nav
+          className="md:hidden border-t border-white/[0.06] px-4 py-3 flex flex-col gap-1.5"
+          style={{ backgroundColor: 'rgba(8,13,26,0.97)', backdropFilter: 'blur(28px)' }}
+        >
+          {NAV_ITEMS.map((item: NavItem) => {
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => go(item.id)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-[15px] transition-all"
+                style={
+                  isActive
+                    ? {
+                        color: '#fff',
+                        background: 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(8,145,178,0.12) 100%)',
+                        border: '1px solid rgba(52,211,153,0.25)',
+                      }
+                    : {
+                        color: 'rgba(148,163,184,0.85)',
+                        border: '1px solid transparent',
+                      }
+                }
+              >
+                <span style={{ color: isActive ? '#34d399' : 'inherit', display: 'flex' }}>
+                  {React.isValidElement(item.icon)
+                    ? React.cloneElement(item.icon as React.ReactElement<any>, { size: 17, strokeWidth: 2 })
+                    : item.icon}
+                </span>
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 };

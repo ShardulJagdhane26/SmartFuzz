@@ -155,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ progress, onNewScan, onViewLiveSc
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 border-b border-white/[0.06] pb-8">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Security{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Suite

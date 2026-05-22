@@ -104,9 +104,9 @@ const Reports: React.FC<ReportsProps> = ({ onViewResults, onNewScan }) => {
     <div className="space-y-7 animate-in fade-in duration-700 pb-12">
 
       {/* Header */}
-      <div className="flex items-end justify-between border-b border-white/[0.06] pb-7">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-white/[0.06] pb-7">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Security{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Reports
@@ -156,10 +156,10 @@ const Reports: React.FC<ReportsProps> = ({ onViewResults, onNewScan }) => {
           ].map((s) => (
             <div
               key={s.label}
-              className="rounded-2xl p-7 flex flex-col items-center text-center gap-2 border border-emerald-500/15"
+              className="rounded-2xl p-4 sm:p-7 flex flex-col items-center text-center gap-2 border border-emerald-500/15"
               style={{ backdropFilter: 'blur(16px)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.03) 100%)' }}
             >
-              <p className="text-3xl font-black text-white tabular-nums">{s.value}</p>
+              <p className="text-2xl sm:text-3xl font-black text-white tabular-nums">{s.value}</p>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</p>
             </div>
           ))}

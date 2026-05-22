@@ -135,9 +135,9 @@ const Results: React.FC<ResultsProps> = ({ scanId }) => {
     <div className="space-y-7 animate-in fade-in duration-700 pb-16">
 
       {/* Header */}
-      <div className="flex items-end justify-between border-b border-white/[0.06] pb-7">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-white/[0.06] pb-7">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Audit{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Inventory
@@ -171,7 +171,7 @@ const Results: React.FC<ResultsProps> = ({ scanId }) => {
 
       {/* Scan meta cards */}
       {scanMeta && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { icon: <Globe size={20} strokeWidth={1.5} className="text-emerald-400" />, label: 'Target', value: scanMeta.target_url, truncate: true },
             { icon: <Calendar size={20} strokeWidth={1.5} className="text-emerald-400" />, label: 'Scanned', value: formatDate(scanMeta.created_at) },

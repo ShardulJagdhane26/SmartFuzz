@@ -28,7 +28,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
     <div className="min-h-full">
 
       {/* ── Hero ── */}
-      <section className="max-w-screen-2xl mx-auto px-10 lg:px-16 pt-24 pb-20">
+      <section className="max-w-screen-2xl mx-auto px-4 md:px-10 lg:px-16 pt-24 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
           {/* Left */}
@@ -38,7 +38,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
               AI-Powered Security Testing
             </div>
 
-            <h1 className="text-6xl xl:text-7xl font-black leading-[0.95] tracking-tighter">
+            <h1 className="text-5xl sm:text-6xl xl:text-7xl font-black leading-[0.95] tracking-tighter">
               <span className="text-white">Intelligent</span><br />
               <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Fuzzing</span><br />
               <span className="text-white">for Modern</span><br />
@@ -63,7 +63,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
           </div>
 
           {/* Right — terminal mock */}
-          <div className="mt-16">
+          <div className="lg:mt-16">
             <div
               className="rounded-2xl overflow-hidden border border-white/[0.1] shadow-[0_0_60px_rgba(0,0,0,0.6),0_0_40px_rgba(16,185,129,0.05)]"
               style={{ backdropFilter: 'blur(24px)', background: 'linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)', backgroundColor: 'rgba(8,13,26,0.9)' }}
@@ -133,7 +133,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
 
       {/* ── Features ── */}
       <section className="py-20 border-t border-white/[0.06]">
-        <div className="max-w-screen-2xl mx-auto px-10 lg:px-16">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-10 lg:px-16">
 
           <div className="mb-12">
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-400 mb-4">Capabilities</p>
@@ -167,7 +167,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
 
       {/* ── CTA ── */}
       <section className="border-t border-white/[0.06] py-20">
-        <div className="max-w-screen-2xl mx-auto px-10 lg:px-16">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-10 lg:px-16">
           <div
             className="rounded-2xl p-12 border border-white/[0.1] flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_0_60px_rgba(16,185,129,0.08)]"
             style={{ backdropFilter: 'blur(24px)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(255,255,255,0.03) 100%)' }}
@@ -192,7 +192,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
 
       {/* ── Team ── */}
       <section className="border-t border-white/[0.06] py-16">
-        <div className="max-w-screen-2xl mx-auto px-10 lg:px-16">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-10 lg:px-16">
           <div className="flex flex-col items-center gap-10">
             <div className="text-center">
               <p className="text-xs uppercase tracking-widest text-emerald-500 font-bold mb-2">Built by</p>
@@ -243,7 +243,7 @@ const Landing: React.FC<LandingProps> = ({ onStartScan }) => {
 
       {/* ── Footer ── */}
       <footer className="border-t border-white/[0.05] py-6">
-        <div className="max-w-screen-2xl mx-auto px-10 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-2">
+        <div className="max-w-screen-2xl mx-auto px-4 md:px-10 lg:px-16 flex flex-col md:flex-row justify-between items-center gap-2">
           <span className="text-slate-600 text-sm">© 2026 SmartFuzz. All rights reserved.</span>
           <span className="text-slate-700 text-xs uppercase tracking-widest font-bold">SmartFuzz by 4 bits</span>
         </div>

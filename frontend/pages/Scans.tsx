@@ -91,9 +91,9 @@ const Scans: React.FC<ScansProps> = ({ onViewResults }) => {
     <div className="space-y-7 animate-in fade-in duration-700 pb-16">
 
       {/* Header */}
-      <div className="flex items-end justify-between border-b border-white/[0.06] pb-7">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-white/[0.06] pb-7">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Scan{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               History
@@ -121,10 +121,10 @@ const Scans: React.FC<ScansProps> = ({ onViewResults }) => {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-2xl p-7 flex flex-col items-center text-center gap-2 border border-emerald-500/15"
+            className="rounded-2xl p-4 sm:p-7 flex flex-col items-center text-center gap-2 border border-emerald-500/15"
             style={{ backdropFilter: 'blur(16px)', background: 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.03) 100%)' }}
           >
-            <p className="text-3xl font-black text-white tabular-nums">{card.value}</p>
+            <p className="text-2xl sm:text-3xl font-black text-white tabular-nums">{card.value}</p>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{card.label}</p>
           </div>
         ))}
@@ -144,9 +144,9 @@ const Scans: React.FC<ScansProps> = ({ onViewResults }) => {
       </div>
 
       {/* Status filter pills */}
-      <div className="flex justify-center">
+      <div className="flex justify-start sm:justify-center overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         <div
-          className="flex items-center gap-1.5 p-1.5 rounded-xl"
+          className="flex items-center gap-1.5 p-1.5 rounded-xl shrink-0"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           {([

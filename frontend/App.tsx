@@ -137,7 +137,7 @@ export default function App() {
         {currentPage === "landing"
           ? renderPage()
           : (
-            <div className="max-w-screen-2xl mx-auto px-10 py-10 lg:px-16 lg:py-12">
+            <div className="max-w-screen-2xl mx-auto px-4 py-6 md:px-10 md:py-10 lg:px-16 lg:py-12">
               {renderPage()}
             </div>
           )

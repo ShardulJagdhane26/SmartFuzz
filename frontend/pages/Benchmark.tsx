@@ -110,7 +110,7 @@ const Benchmark: React.FC = () => {
           <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/15 rounded-xl">
             <BarChart2 size={22} className="text-emerald-400" strokeWidth={1.5} />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             SmartFuzz{' '}
             <span style={{ background: 'linear-gradient(90deg, #34d399, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               vs
@@ -123,8 +123,9 @@ const Benchmark: React.FC = () => {
         </p>
       </div>
 
-      {/* Comparison table */}
-      <div className="rounded-2xl overflow-hidden border border-white/[0.08]" style={glassPanel}>
+      {/* Comparison table — scrolls horizontally on mobile instead of crushing */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="rounded-2xl overflow-hidden border border-white/[0.08] min-w-[640px]" style={glassPanel}>
 
         {/* Column headers */}
         <div className="grid grid-cols-3 border-b border-white/[0.06]">
@@ -187,6 +188,7 @@ const Benchmark: React.FC = () => {
             </div>
           </div>
         ))}
+      </div>
       </div>
 
       {/* Legend */}
