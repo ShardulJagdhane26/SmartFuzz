@@ -46,15 +46,57 @@ def _seed_persistent_db() -> None:
         print(f"[db] Seeded persistent DB: {_SEED_DB} → {DB_PATH}")
 
 
+# ── libsql row/cursor/connection wrappers ────────────────────────────────────
+# libsql_experimental doesn't support row_factory, so we wrap its objects to
+# give the same dict-style row access (row["col"], dict(row)) that sqlite3.Row
+# provides throughout the rest of this module.
+
+class _Row(dict):
+    def __init__(self, description, values):
+        super().__init__(zip([d[0] for d in description], values))
+        self._values = values
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._values[key]
+        return super().__getitem__(key)
+
+class _Cursor:
+    def __init__(self, cursor):
+        self._c = cursor
+    @property
+    def description(self):
+        return self._c.description
+    def fetchone(self):
+        row = self._c.fetchone()
+        if row is None or not self._c.description:
+            return None
+        return _Row(self._c.description, row)
+    def fetchall(self):
+        desc = self._c.description
+        if not desc:
+            return []
+        return [_Row(desc, r) for r in self._c.fetchall()]
+
+class _TursoConn:
+    def __init__(self, conn):
+        self._c = conn
+    def execute(self, sql, params=None):
+        cur = self._c.execute(sql, params) if params is not None else self._c.execute(sql)
+        return _Cursor(cur)
+    def commit(self):
+        self._c.commit()
+    def close(self):
+        self._c.close()
+
+
 # ── Connection helper ─────────────────────────────────────────────────────────
 
 def _get_conn():
     if _USE_TURSO:
-        conn = _libsql.connect(TURSO_URL, auth_token=TURSO_TOKEN)
-    else:
-        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-        conn.execute("PRAGMA journal_mode=WAL")
-        conn.execute("PRAGMA foreign_keys=ON")
+        return _TursoConn(_libsql.connect(TURSO_URL, auth_token=TURSO_TOKEN))
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
     conn.row_factory = sqlite3.Row
     return conn
 
