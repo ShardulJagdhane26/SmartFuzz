@@ -63,19 +63,31 @@ def _seed_persistent_db() -> None:
 
 # ── Turso connection setup ────────────────────────────────────────────────────
 
+def _connect_replica():
+    """Open an embedded-replica connection. Tries with sync_interval (newer
+    bindings); retries without it if the installed version is too old."""
+    try:
+        return _libsql.connect(
+            _REPLICA_PATH,
+            sync_url=TURSO_URL,
+            auth_token=TURSO_TOKEN,
+            sync_interval=_SYNC_INTERVAL,
+        )
+    except TypeError:
+        return _libsql.connect(
+            _REPLICA_PATH,
+            sync_url=TURSO_URL,
+            auth_token=TURSO_TOKEN,
+        )
+
+
 def _init_turso_conn() -> None:
     """Open the embedded-replica connection once and hydrate it from the primary.
     Falls back to plain remote mode if the replica can't be created — that path
     is slower but proven, so the app never breaks and data is never lost."""
     global _turso_conn, _turso_remote
     try:
-        conn = _libsql.connect(
-            _REPLICA_PATH,
-            sync_url=TURSO_URL,
-            auth_token=TURSO_TOKEN,
-            sync_interval=_SYNC_INTERVAL,
-            _check_same_thread=False,
-        )
+        conn = _connect_replica()
         conn.sync()  # pull the full DB down once at startup
         _turso_conn   = conn
         _turso_remote = False
@@ -85,9 +97,7 @@ def _init_turso_conn() -> None:
         # Fall back to a plain remote connection — slower, but guaranteed to work.
         _turso_remote = True
         try:
-            _turso_conn = _libsql.connect(
-                TURSO_URL, auth_token=TURSO_TOKEN, _check_same_thread=False
-            )
+            _turso_conn = _libsql.connect(TURSO_URL, auth_token=TURSO_TOKEN)
             print(f"[db] Embedded replica unavailable ({e}); using remote mode")
         except Exception as e2:
             _turso_conn = None
