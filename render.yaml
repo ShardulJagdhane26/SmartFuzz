@@ -21,6 +21,10 @@ services:
         value: "0"
       - key: SMARTFUZZ_ALLOW_LOCAL
         value: "0"
+      - key: TURSO_URL
+        sync: false              # supply via Render dashboard
+      - key: TURSO_TOKEN
+        sync: false              # supply via Render dashboard
     healthCheckPath: /api/health
 
   - type: web
