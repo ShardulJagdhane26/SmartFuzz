@@ -3,7 +3,6 @@
 > AI powered web vulnerability fuzzer with differential analysis, Gemini synthesised payloads, and CVSS scored findings.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Made with React](https://img.shields.io/badge/frontend-React%2019-61dafb.svg)](https://react.dev/)
 [![Flask](https://img.shields.io/badge/backend-Flask%203-000000.svg)](https://flask.palletsprojects.com/)
 
