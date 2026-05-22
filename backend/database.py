@@ -16,6 +16,7 @@ import json
 import os
 import threading
 import tempfile
+import uuid
 from datetime import datetime
 
 TURSO_URL   = os.environ.get("TURSO_URL", "")
@@ -425,6 +426,67 @@ def insert_finding(scan_id: str, finding: dict):
     ))
     conn.commit()
     conn.close()
+
+
+_INSERT_FINDING_SQL = """
+    INSERT OR IGNORE INTO VULNERABILITY
+        (id, scan_id, vuln_type, parameter, payload, severity,
+         signature_label, url, method, status_code,
+         response_time_s, response_snippet, timestamp, remediation,
+         cvss_score, cvss_vector, owasp_category, owasp_name)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+"""
+
+
+def _finding_row(scan_id: str, finding: dict) -> tuple:
+    rt = finding.get("response_time_s")
+    if rt is None:
+        rt_ms = finding.get("response_time_ms", 0)
+        rt = rt_ms / 1000.0 if rt_ms else None
+    return (
+        finding.get("id") or str(uuid.uuid4()),
+        scan_id,
+        finding.get("vuln_type", ""),
+        finding.get("parameter", ""),
+        finding.get("payload", ""),
+        finding.get("severity", "Low"),
+        finding.get("signature_label") or finding.get("evidence", ""),
+        finding.get("url", ""),
+        finding.get("method", "GET"),
+        finding.get("status_code"),
+        rt,
+        finding.get("response_snippet") or finding.get("evidence", ""),
+        finding.get("timestamp", ""),
+        finding.get("remediation", ""),
+        finding.get("cvss_score"),
+        finding.get("cvss_vector"),
+        finding.get("owasp_category"),
+        finding.get("owasp_name"),
+    )
+
+
+def insert_findings_bulk(scan_id: str, findings: list[dict]):
+    """Insert all findings in ONE transaction — a single commit, which means a
+    single network round-trip to the Turso primary instead of one per finding.
+    This is the fix for the end-of-scan write burst that used to hold the DB
+    lock for ~30s (72 findings x ~400ms each) and stall every page read."""
+    if not findings:
+        return
+    rows = [_finding_row(scan_id, f) for f in findings]
+
+    if _USE_TURSO:
+        if _turso_conn is None:
+            _init_turso_conn()
+        # Hold the write lock once for the whole batch; commit syncs it all at once.
+        with _turso_lock:
+            for r in rows:
+                _turso_conn.execute(_INSERT_FINDING_SQL, list(r))
+            _turso_conn.commit()
+    else:
+        conn = _get_conn()
+        conn.executemany(_INSERT_FINDING_SQL, rows)
+        conn.commit()
+        conn.close()
 
 
 def get_findings(scan_id: str) -> list[dict]:

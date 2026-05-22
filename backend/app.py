@@ -40,21 +40,11 @@ db.init_db()
 
 
 def _emit_scan_event(scan_id: str) -> None:
-    """Push the current persisted scan state to every client in the scan's room.
-    DB is the single source of truth; this just mirrors it to subscribers."""
-    try:
-        scan = db.get_scan(scan_id)
-        if not scan:
-            return
-        socketio.emit("scan_progress", {
-            "scan_id":          scan_id,
-            "progress":         scan.get("progress", 0),
-            "current_step":     scan.get("current_step", ""),
-            "status":           scan.get("status", "queued"),
-            "findings_so_far":  db.count_findings(scan_id),
-        }, to=scan_id)
-    except Exception as e:
-        print(f"[socketio] emit failed: {e}")
+    """No-op. The frontend polls /status over HTTP instead of using WebSockets
+    (the threading-mode server can't serve WS), so there are no room subscribers.
+    Skipping the emit avoids two extra locked DB reads per progress update while
+    a scan is running — keeping the DB lock free for page reads."""
+    return
 
 
 def _progress(scan_id: str, percent: int, step: str, status: str | None = None) -> None:
@@ -326,8 +316,7 @@ def run_scan(scan_id: str, vuln_classes: list, target_url: str, auth: dict | Non
 
         if cancelled(): return
 
-        for finding in findings:
-            db.insert_finding(scan_id, finding)
+        db.insert_findings_bulk(scan_id, findings)
 
         _progress(scan_id, 90,
             f"Fuzzing complete — {len(findings)} verified finding(s).")
