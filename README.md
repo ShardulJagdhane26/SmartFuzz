@@ -166,3 +166,16 @@ graph LR
 <p align="justify">PRs welcome. Please open an issue first for non-trivial changes so we can align on scope. Run <code>npx tsc --noEmit</code> in <code>frontend/</code> and a syntax check on the backend before submitting.</p>
 
 ---
+
+## Team
+
+SmartFuzz was built by:
+
+| | Name |
+|---|---|
+| <a href="https://github.com/Nazish0508"><img src="https://github.com/Nazish0508.png?size=60" width="60" height="60" style="border-radius:50%"/></a> | [Nazish Ansari](https://github.com/Nazish0508) |
+| <a href="https://github.com/suhani-90"><img src="https://github.com/suhani-90.png?size=60" width="60" height="60" style="border-radius:50%"/></a> | [Suhani Parkhi](https://github.com/suhani-90) |
+| <a href="https://github.com/SejalBhole"><img src="https://github.com/SejalBhole.png?size=60" width="60" height="60" style="border-radius:50%"/></a> | [Sejal Bhole](https://github.com/SejalBhole) |
+| <a href="https://github.com/ShardulJagdhane26"><img src="https://github.com/ShardulJagdhane26.png?size=60" width="60" height="60" style="border-radius:50%"/></a> | [Shardul Jagdhane](https://github.com/ShardulJagdhane26) |
+
+---
