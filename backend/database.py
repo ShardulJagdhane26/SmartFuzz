@@ -14,15 +14,30 @@ Tables:
 import sqlite3
 import json
 import os
+import threading
+import tempfile
 from datetime import datetime
 
 TURSO_URL   = os.environ.get("TURSO_URL", "")
 TURSO_TOKEN = os.environ.get("TURSO_TOKEN", "")
 _USE_TURSO  = bool(TURSO_URL and TURSO_TOKEN)
 
+# Embedded-replica tuning. The replica is a local SQLite file kept in sync with
+# the Turso primary: READS hit the local file (microseconds), WRITES auto-push
+# to the primary so data persists even when the file is wiped on redeploy.
+_REPLICA_PATH  = os.environ.get(
+    "TURSO_REPLICA_PATH",
+    os.path.join(tempfile.gettempdir(), "smartfuzz_replica.db"),
+)
+_SYNC_INTERVAL = int(os.environ.get("TURSO_SYNC_INTERVAL", "30"))  # seconds
+
+# Shared singleton state for the embedded replica.
+_turso_conn   = None            # the long-lived libsql connection
+_turso_lock   = threading.Lock()  # serialises access (libsql conn isn't thread-safe)
+_turso_remote = False           # True if we fell back to plain remote mode
+
 if _USE_TURSO:
     import libsql_experimental as _libsql  # type: ignore
-    print("[db] Using Turso remote database")
     DB_PATH  = None
     _SEED_DB = None
 else:
@@ -46,10 +61,44 @@ def _seed_persistent_db() -> None:
         print(f"[db] Seeded persistent DB: {_SEED_DB} → {DB_PATH}")
 
 
+# ── Turso connection setup ────────────────────────────────────────────────────
+
+def _init_turso_conn() -> None:
+    """Open the embedded-replica connection once and hydrate it from the primary.
+    Falls back to plain remote mode if the replica can't be created — that path
+    is slower but proven, so the app never breaks and data is never lost."""
+    global _turso_conn, _turso_remote
+    try:
+        conn = _libsql.connect(
+            _REPLICA_PATH,
+            sync_url=TURSO_URL,
+            auth_token=TURSO_TOKEN,
+            sync_interval=_SYNC_INTERVAL,
+            _check_same_thread=False,
+        )
+        conn.sync()  # pull the full DB down once at startup
+        _turso_conn   = conn
+        _turso_remote = False
+        print(f"[db] Turso embedded replica ready at {_REPLICA_PATH} "
+              f"(local reads, {_SYNC_INTERVAL}s background sync)")
+    except Exception as e:
+        # Fall back to a plain remote connection — slower, but guaranteed to work.
+        _turso_remote = True
+        try:
+            _turso_conn = _libsql.connect(
+                TURSO_URL, auth_token=TURSO_TOKEN, _check_same_thread=False
+            )
+            print(f"[db] Embedded replica unavailable ({e}); using remote mode")
+        except Exception as e2:
+            _turso_conn = None
+            print(f"[db] Turso connection failed entirely: {e2}")
+
+
 # ── libsql row/cursor/connection wrappers ────────────────────────────────────
 # libsql_experimental doesn't support row_factory, so we wrap its objects to
-# give the same dict-style row access (row["col"], dict(row)) that sqlite3.Row
-# provides throughout the rest of this module.
+# give the same dict-style row access (row["col"], dict(row)) the rest of this
+# module relies on. Results are fetched eagerly under the shared lock so no live
+# cursor outlives the lock — that keeps the single shared connection thread-safe.
 
 class _Row(dict):
     def __init__(self, description, values):
@@ -60,40 +109,48 @@ class _Row(dict):
             return self._values[key]
         return super().__getitem__(key)
 
-class _Cursor:
-    def __init__(self, cursor):
-        self._c = cursor
-    @property
-    def description(self):
-        return self._c.description
+class _EagerCursor:
+    """Holds rows already fetched under the lock; iterated lock-free afterwards."""
+    def __init__(self, rows):
+        self._rows = rows
+        self._idx  = 0
     def fetchone(self):
-        row = self._c.fetchone()
-        if row is None or not self._c.description:
-            return None
-        return _Row(self._c.description, row)
+        if self._idx < len(self._rows):
+            row = self._rows[self._idx]
+            self._idx += 1
+            return row
+        return None
     def fetchall(self):
-        desc = self._c.description
-        if not desc:
-            return []
-        return [_Row(desc, r) for r in self._c.fetchall()]
+        rest = self._rows[self._idx:]
+        self._idx = len(self._rows)
+        return rest
 
 class _TursoConn:
+    """Wraps the shared libsql connection. Every op runs under _turso_lock and
+    fetches results eagerly so the connection is touched by one thread at a time.
+    close() is a no-op — the underlying connection is a long-lived singleton."""
     def __init__(self, conn):
         self._c = conn
     def execute(self, sql, params=None):
-        cur = self._c.execute(sql, params) if params is not None else self._c.execute(sql)
-        return _Cursor(cur)
+        with _turso_lock:
+            cur  = self._c.execute(sql, params) if params is not None else self._c.execute(sql)
+            desc = cur.description
+            rows = [_Row(desc, r) for r in cur.fetchall()] if desc else []
+        return _EagerCursor(rows)
     def commit(self):
-        self._c.commit()
+        with _turso_lock:
+            self._c.commit()
     def close(self):
-        self._c.close()
+        pass  # singleton — never actually closed
 
 
 # ── Connection helper ─────────────────────────────────────────────────────────
 
 def _get_conn():
     if _USE_TURSO:
-        return _TursoConn(_libsql.connect(TURSO_URL, auth_token=TURSO_TOKEN))
+        if _turso_conn is None:
+            _init_turso_conn()
+        return _TursoConn(_turso_conn)
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
